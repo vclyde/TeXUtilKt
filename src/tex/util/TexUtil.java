@@ -2,6 +2,9 @@ package tex.util;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -11,12 +14,12 @@ import java.util.Set;
  *
  * @author Clyde M. Velasquez
  * @since January 31, 2017
- * @version 0.1
+ * @version 1.0
  */
 public class TexUtil {
     private static final File CURRENT = new File("");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (args.length == 0 || args.length > 1) {
             message();
         } else if (args.length == 1) {
@@ -31,6 +34,20 @@ public class TexUtil {
             } else {
                 System.err.println("ERROR: File does not exist!");
                 return;
+            }
+
+            // Create a back-up
+            File backUp = new File(texFile.getParentFile(),
+                    texFile.getName().substring(0, texFile.getName().lastIndexOf(".")) +
+                    "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss")) + ".tex");
+            System.out.println(backUp.getAbsolutePath());
+            try {
+                Files.copy(texFile.toPath(), backUp.toPath());
+                System.out.println("Done creating back-up file.");
+            } catch (Exception e) {
+                System.err.println("ERROR: Error in creating back-up");
+                // e.printStackTrace(); // For debugging purposes
+                throw e;
             }
 
             StringBuilder sb = new StringBuilder();
@@ -61,10 +78,11 @@ public class TexUtil {
 
     private static void message() {
         System.out.println("USAGE: java -jar TexUtil.jar file1.tex");
-        System.out.println("Handles only one TEX file as of this time.");
+        System.out.println("Handles only one TEX file at a time.");
         System.out.println("special_characters.csv must be the same directory as TexUtil.jar");
     }
 
+    // Read the csv file and add to a HashMap collection
     private static HashMap<String, String> dictionary() throws URISyntaxException, IOException {
         HashMap<String, String> dictionary = new HashMap<>();
 
