@@ -1,4 +1,4 @@
-package tex.util;
+package com.clydeev.tex.util;
 
 import java.io.*;
 import java.net.URISyntaxException;
