@@ -1,8 +1,6 @@
 package com.clydeev.tex
 
-import com.clydeev.tex.util.CsvReader
 import java.io.*
-import java.net.URISyntaxException
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -14,7 +12,6 @@ import java.util.*
  * @version 1.0
  * @since 6/6/2017
  */
-
 object TexUtil {
     private val CURRENT = File("")
 
@@ -27,37 +24,37 @@ object TexUtil {
             val texFile = File(args[0])
             if (texFile.exists()) {
                 if (!texFile.isFile && !texFile.absolutePath.trim { it <= ' ' }.endsWith(".tex")) {
-                    System.err.println("ERROR: Error processing " + texFile.absolutePath)
-                    System.err.println("Make sure it's a TEX file!")
+                    printlnErr("ERROR: Error processing " + texFile.absolutePath)
+                    printlnErr("Make sure it's a TEX file!")
                     return
                 }
             } else {
-                System.err.println("ERROR: File does not exist!")
+                printlnErr("ERROR: File does not exist!")
                 return
             }
 
             // Create a back-up
             val backUp = File(texFile.parentFile,
                     texFile.name.substring(0, texFile.name.lastIndexOf(".")) +
-                            "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss")) + ".tex")
-            println(backUp.absolutePath)
+                            "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMM_ddhhmmss")) + ".tex")
             try {
+                println("Creating a back-up...")
                 Files.copy(texFile.toPath(), backUp.toPath())
                 println("Done creating back-up file.")
-            } catch (e: Exception) {
-                System.err.println("ERROR: Error in creating back-up")
+            } catch (e: IOException) {
+                printlnErr("ERROR: Error in creating back-up")
                 // e.printStackTrace(); // For debugging purposes
                 throw e
             }
 
             val sb = StringBuilder()
-            println("Processing " + texFile.absolutePath + " ...")
             if (texFile.exists()) {
                 try {
+                    println("Reading file contents...")
                     BufferedReader(FileReader(texFile)).use { bReader ->
                         bReader.lines().forEachOrdered { line -> sb.append(line).append("\n") }
-                        println("Done!")
                     }
+                    println("Done reading file contents.")
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -65,6 +62,7 @@ object TexUtil {
 
             var fileContents = sb.toString()
             try {
+                println("Processing " + texFile.name + "...")
                 BufferedWriter(FileWriter(texFile)).use { writer ->
                     val keys = dictionary().keys
                     for (key in keys) {
@@ -74,10 +72,9 @@ object TexUtil {
                     writer.write(fileContents)
                     writer.close()
                 }
+                println("Done replacing special characters.")
             } catch (e: IOException) {
-                e.printStackTrace()
-            } catch (e: URISyntaxException) {
-                e.printStackTrace()
+                printlnErr(e.message)
             }
         }
     }
@@ -89,17 +86,24 @@ object TexUtil {
     }
 
     // Read the csv file and add to a HashMap collection
-    @Throws(URISyntaxException::class, IOException::class)
+    @Throws(IOException::class)
     private fun dictionary(): HashMap<String, String> {
         val dictionary = HashMap<String, String>()
-        val specialCharactersCSV = File(CURRENT.toString() + "special_characters.csv")
-        val reader = CsvReader(specialCharactersCSV)
 
-        while (reader.hasNextLine()) {
-            val value = reader.lineSplit()
-            dictionary.put(value[0], value[1])
+        try {
+            val specialCharactersCSV = File(CURRENT.toString() + "special_characters.csv")
+            val reader = CsvReader(specialCharactersCSV)
+
+            while (reader.hasNextLine()) {
+                val value = reader.lineSplit()
+                dictionary.put(value[0], value[1])
+            }
+        } catch (e: IOException) {
+            throw IOException("Cannot find special_characters.csv")
         }
 
         return dictionary
     }
+
+    private fun printlnErr(message: Any?) = System.err.println(message)
 }

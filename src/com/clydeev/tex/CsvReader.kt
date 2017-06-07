@@ -1,4 +1,4 @@
-package com.clydeev.tex.util
+package com.clydeev.tex
 
 import java.io.*
 import java.util.stream.Stream
@@ -10,9 +10,9 @@ import java.util.stream.Stream
  * @version 1.0
  * @since 6/6/2017
  */
-class CsvReader
-    @Throws(FileNotFoundException::class)
-    constructor(val file: File) {
+public class CsvReader
+    @Throws(IOException::class)
+    constructor(var file: File) {
 
     private val lineReader: BufferedReader = BufferedReader(FileReader(this.file))
     private var line: String? = ""
