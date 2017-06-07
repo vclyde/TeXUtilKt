@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="TexUtil:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/TexUtil_jar</output-path>
-    <root id="archive" name="TexUtil.jar">
-      <element id="module-output" name="TexUtil" />
-    </root>
-  </artifact>
-</component>
