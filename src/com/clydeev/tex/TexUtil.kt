@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
+ * Contains the main method
  *
  * @author Clyde M. Velasquez
  * @version 1.0
@@ -15,7 +16,6 @@ import java.util.*
 object TexUtil {
     private val CURRENT = File("")
 
-    @Throws(IOException::class)
     @JvmStatic fun main(args: Array<String>) {
         if (args.isEmpty() || args.size > 1) {
             message()
@@ -24,7 +24,7 @@ object TexUtil {
             val texFile = File(args[0])
             if (texFile.exists()) {
                 if (!texFile.isFile && !texFile.absolutePath.trim { it <= ' ' }.endsWith(".tex")) {
-                    printlnErr("ERROR: Error processing " + texFile.absolutePath)
+                    printlnErr("ERROR: Error processing ${texFile.absolutePath}")
                     printlnErr("Make sure it's a TEX file!")
                     return
                 }
@@ -33,36 +33,10 @@ object TexUtil {
                 return
             }
 
-            // Create a back-up
-            val backUp = File(texFile.parentFile,
-                    texFile.name.substring(0, texFile.name.lastIndexOf(".")) +
-                            "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMM_ddhhmmss")) + ".tex")
+            createBackUp(texFile)
+            var fileContents = readFileContents(texFile)
             try {
-                println("Creating a back-up...")
-                Files.copy(texFile.toPath(), backUp.toPath())
-                println("Done creating back-up file.")
-            } catch (e: IOException) {
-                printlnErr("ERROR: Error in creating back-up")
-                // e.printStackTrace(); // For debugging purposes
-                throw e
-            }
-
-            val sb = StringBuilder()
-            if (texFile.exists()) {
-                try {
-                    println("Reading file contents...")
-                    BufferedReader(FileReader(texFile)).use { bReader ->
-                        bReader.lines().forEachOrdered { line -> sb.append(line).append("\n") }
-                    }
-                    println("Done reading file contents.")
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
-
-            var fileContents = sb.toString()
-            try {
-                println("Processing " + texFile.name + "...")
+                println("Processing ${texFile.name}...")
                 BufferedWriter(FileWriter(texFile)).use { writer ->
                     val keys = dictionary().keys
                     for (key in keys) {
@@ -91,7 +65,7 @@ object TexUtil {
         val dictionary = HashMap<String, String>()
 
         try {
-            val specialCharactersCSV = File(CURRENT.toString() + "special_characters.csv")
+            val specialCharactersCSV = File("${CURRENT.toString()} special_characters.csv")
             val reader = CsvReader(specialCharactersCSV)
 
             while (reader.hasNextLine()) {
@@ -106,4 +80,32 @@ object TexUtil {
     }
 
     private fun printlnErr(message: Any?) = System.err.println(message)
+
+    private fun createBackUp(texFile: File) {
+        val backUp = File(texFile.parentFile, "${texFile.name.substring(0, texFile.name.lastIndexOf("."))} " +
+                "backup_${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMM_ddhhmmss"))}.tex")
+        try {
+            println("Creating a back-up...")
+            Files.copy(texFile.toPath(), backUp.toPath())
+            println("Done creating back-up file.")
+        } catch (e: IOException) {
+            printlnErr("ERROR: Error in creating back-up for ${texFile.name}!")
+            // e.printStackTrace() // For debugging purposes only
+        }
+    }
+
+    private fun readFileContents(texFile: File): String {
+        val sb = StringBuilder()
+        try {
+            println("Reading file contents...")
+            BufferedReader(FileReader(texFile)).use { bReader ->
+                bReader.lines().forEachOrdered { line -> sb.append(line).append("\n") }
+            }
+            println("Done reading file contents.")
+        } catch (e: IOException) {
+            println("ERROR: Error reading file contents!")
+            // e.printStackTrace() // For debugging purposes only
+        }
+        return sb.toString()
+    }
 }
