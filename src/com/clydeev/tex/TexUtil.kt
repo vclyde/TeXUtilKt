@@ -16,6 +16,9 @@ import java.util.*
 object TexUtil {
     private val CURRENT = File("")
 
+    /**
+     * Main method
+     */
     @JvmStatic fun main(args: Array<String>) {
         if (args.isEmpty() || args.size > 1) {
             message()
@@ -53,19 +56,15 @@ object TexUtil {
         }
     }
 
-    private fun message() {
-        println("USAGE: java -jar TexUtil.jar file1.tex")
-        println("Handles only one TEX file at a time.")
-        println("special_characters.csv must be the same directory as TexUtil.jar")
-    }
-
-    // Read the csv file and add to a HashMap collection
+    /**
+     * Read 'special_characters.csv' and add contents to a HashMap collection
+     */
     @Throws(IOException::class)
     private fun dictionary(): HashMap<String, String> {
         val dictionary = HashMap<String, String>()
 
         try {
-            val specialCharactersCSV = File("${CURRENT.toString()} special_characters.csv")
+            val specialCharactersCSV = File("$CURRENT special_characters.csv")
             val reader = CsvReader(specialCharactersCSV)
 
             while (reader.hasNextLine()) {
@@ -79,8 +78,9 @@ object TexUtil {
         return dictionary
     }
 
-    private fun printlnErr(message: Any?) = System.err.println(message)
-
+    /**
+     * Create a back-up file saved to the same directory as the original file
+     */
     private fun createBackUp(texFile: File) {
         val backUp = File(texFile.parentFile, "${texFile.name.substring(0, texFile.name.lastIndexOf("."))} " +
                 "backup_${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMM_ddhhmmss"))}.tex")
@@ -94,6 +94,9 @@ object TexUtil {
         }
     }
 
+    /**
+     * Reads the file and returns contents as String
+     */
     private fun readFileContents(texFile: File): String {
         val sb = StringBuilder()
         try {
@@ -108,4 +111,12 @@ object TexUtil {
         }
         return sb.toString()
     }
+
+    private fun message() {
+        println("USAGE: java -jar TexUtil.jar file.tex")
+        println("Handles only one TEX file at a time.")
+        println("special_characters.csv must be the same directory as TexUtil.jar")
+    }
+
+    private fun printlnErr(message: Any?) = System.err.println(message)
 }
