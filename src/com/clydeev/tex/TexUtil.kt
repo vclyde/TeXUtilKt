@@ -21,7 +21,7 @@ object TexUtil {
      */
     @JvmStatic fun main(args: Array<String>) {
         if (args.isEmpty() || args.size > 1) {
-            message()
+            usage()
         } else if (args.size == 1) {
             // Check args if it contains tex files
             val texFile = File(args[0])
@@ -112,7 +112,7 @@ object TexUtil {
         return sb.toString()
     }
 
-    private fun message() {
+    private fun usage() {
         println("USAGE: java -jar TexUtil.jar file.tex")
         println("Handles only one TEX file at a time.")
         println("special_characters.csv must be the same directory as TexUtil.jar")
